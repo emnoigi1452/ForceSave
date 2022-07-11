@@ -61,6 +61,7 @@ public class DataListeners {
 		@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
 		public void onLogout(PlayerQuitEvent e) {
 			final Player p = e.getPlayer();
+			main.removeMods(p);
 			new Thread(new Update(p, getMain())).start();
 			new Thread(new Save(p, getMain())).start();
 		}
