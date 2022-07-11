@@ -1,0 +1,5 @@
+name: ForceSave
+version: 0.1
+author: StellarSeal
+main: me.stella.ForceSavePlugin
+description: A plugin that forces data save
