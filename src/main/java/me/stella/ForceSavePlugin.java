@@ -32,7 +32,7 @@ public class ForceSavePlugin extends JavaPlugin {
 	public void onDisable() {
 		this.repository.unloadRepository();
 		this.listener.unregister();
-		logger.log(Level.INFO, color("&eSkyblock &3| &fUnloading &aForceSave v0.1r"));
+		logger.log(Level.INFO, color("&eSkyblock &3| &fUnloading &aForceSave v0.1"));
 	}
 	
 	public void addMod(Player p) {

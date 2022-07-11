@@ -29,8 +29,16 @@ public class NBTRepository {
 		this.repo = buildServerProfile(main);
 	}
 	
+	public File getServerBase() {
+		return this.base;
+	}
+	
 	public int getRepositorySize() {
 		return this.repo.keySet().size();
+	}
+	
+	public NBTTagCompound getNBTProfile(Player player) {
+		return this.repo.get(player.getUniqueId());
 	}
 	
 	public void updateProfile(Player player) {
@@ -50,6 +58,11 @@ public class NBTRepository {
 				online.stream().forEach(o -> {
 					updateProfile(o);
 					mimicNBTSave(o.getUniqueId());
+					repo.remove(o.getUniqueId());
+				});
+				repo.keySet().stream().forEach(onbt -> {
+					mimicNBTSave(onbt);
+					repo.remove(onbt);
 				});
 			}
 		}

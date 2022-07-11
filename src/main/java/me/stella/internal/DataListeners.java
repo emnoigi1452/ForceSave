@@ -92,7 +92,6 @@ public class DataListeners {
 		public void run() {
 			NBTRepository rep = this.main.getRepository();
 			rep.mimicNBTSave(this.p);
-			main.noteMods(ForceSavePlugin.color("&eSkyblock &3| &fSaved data for &a" + this.p.getName()));
 		}
 	}
 
