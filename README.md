@@ -1,6 +1,6 @@
 # ForceSave
-An addon to SpigotMC to safely prevent incorrect rollbacks\n
-Author: StellarSeal [emnoigi1452]
+ - An addon to SpigotMC to safely prevent incorrect rollbacks\n
+ - Author: StellarSeal [emnoigi1452]
 
 **NOTE**
 - This project is made with experimental purposes
