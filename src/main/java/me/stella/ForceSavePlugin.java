@@ -47,6 +47,12 @@ public class ForceSavePlugin extends JavaPlugin {
 		});
 	}
 	
+	public void removeMods(Player p) {
+		if(this.moderators.contains(p))
+			this.moderators.remove(p);
+		return;
+	}
+	
 	public NBTRepository getRepository() {
 		return this.repository;
 	}
