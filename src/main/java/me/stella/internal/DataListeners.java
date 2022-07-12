@@ -1,5 +1,7 @@
 package me.stella.internal;
 
+import java.util.UUID;
+
 import org.bukkit.Server;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -7,11 +9,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import me.stella.ForceSavePlugin;
-import net.minecraft.server.v1_12_R1.EntityPlayer;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 
 public class DataListeners {
 	
@@ -46,52 +49,66 @@ public class DataListeners {
 		
 		@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
 		public void onLogin(PlayerJoinEvent e) {
-			final Player p = e.getPlayer();
-			new Thread(new Update(p, getMain())).start();
+			UUID id = e.getPlayer().getUniqueId();
+			NBTTagCompound t = ((CraftPlayer)e.getPlayer()).getHandle().save(new NBTTagCompound());
+			new Thread(new Update(getMain(), id, t)).start();
 		}
 		
 		@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
 		public void onInventoryClose(InventoryCloseEvent e) {
 			if(!(e.getPlayer() instanceof Player))
 				return;
-			final Player p = (Player)e.getPlayer();
-			new Thread(new Update(p, getMain())).start();
+			UUID id = e.getPlayer().getUniqueId();
+			NBTTagCompound t = ((CraftPlayer)e.getPlayer()).getHandle().save(new NBTTagCompound());
+			new Thread(new Update(getMain(), id, t)).start();
+		}
+		
+		@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
+		public void onInventoryMod(InventoryClickEvent e) {
+			if(!(e.getWhoClicked() instanceof Player))
+				return;
+			UUID id = ((Player)e.getWhoClicked()).getUniqueId();
+			NBTTagCompound t = ((CraftPlayer)((Player)e.getWhoClicked())).getHandle().save(new NBTTagCompound());
+			new Thread(new Update(getMain(), id, t)).start();
 		}
 		
 		@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
 		public void onLogout(PlayerQuitEvent e) {
-			final Player p = e.getPlayer();
-			main.removeMods(p);
-			new Thread(new Update(p, getMain())).start();
-			new Thread(new Save(p, getMain())).start();
+			UUID id = e.getPlayer().getUniqueId();
+			NBTTagCompound t = ((CraftPlayer)e.getPlayer()).getHandle().save(new NBTTagCompound());
+			new Thread(new Update(getMain(), id, t)).start();
+			new Thread(new Save(id, getMain())).start();
+			main.removeMods(e.getPlayer());
 		}
 	}
  	
 	private class Update implements Runnable {
-		private EntityPlayer p;
 		private ForceSavePlugin main;
-		public Update(Player player, ForceSavePlugin plugin) {
-			this.p = ((CraftPlayer)player).getHandle();
+		private UUID id;
+		private NBTTagCompound nbt;
+		public Update(ForceSavePlugin plugin, UUID id, NBTTagCompound e) {
 			this.main = plugin;
+			this.id = id;
+			this.nbt = e;
 		}
 		@Override
 		public void run() {
-			NBTRepository rep = this.main.getRepository();
-			rep.updateProfile(this.p);
+			NBTRepository repo = main.getRepository();
+			repo.updateProfile(id, nbt);
 		}
 	}
 	
 	private class Save implements Runnable {
-		private EntityPlayer p;
+		private UUID id;
 		private ForceSavePlugin main;
-		public Save(Player player, ForceSavePlugin plugin) {
-			this.p = ((CraftPlayer)player).getHandle();
+		public Save(UUID id, ForceSavePlugin plugin) {
+			this.id = id;
 			this.main = plugin;
 		}
 		@Override
 		public void run() {
 			NBTRepository rep = this.main.getRepository();
-			rep.mimicNBTSave(this.p);
+			rep.mimicNBTSave(this.id);
 		}
 	}
 

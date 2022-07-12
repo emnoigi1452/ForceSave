@@ -41,13 +41,8 @@ public class NBTRepository {
 		return this.repo.get(player.getUniqueId());
 	}
 	
-	public void updateProfile(Player player) {
-		NBTTagCompound profileData = ((CraftPlayer)player).getHandle().save(new NBTTagCompound());
-		this.repo.put(player.getUniqueId(), profileData);
-	}
-	
-	public void updateProfile(EntityPlayer player) {
-		this.repo.put(UUID.fromString(player.bn()), player.save(new NBTTagCompound()));
+	public void updateProfile(UUID id, NBTTagCompound nbt) {
+		this.repo.put(id, nbt);
 	}
 	
 	public void unloadRepository() {
@@ -56,7 +51,7 @@ public class NBTRepository {
 			public void run() {
 				Collection<? extends Player> online = main.getServer().getOnlinePlayers();
 				online.stream().forEach(o -> {
-					updateProfile(o);
+					updateProfile(o.getUniqueId(), ((CraftPlayer)o).getHandle().save(new NBTTagCompound()));
 					mimicNBTSave(o.getUniqueId());
 					repo.remove(o.getUniqueId());
 				});
@@ -80,14 +75,6 @@ public class NBTRepository {
 		return profile;
 	}
 	
-	public boolean mimicNBTSave(EntityPlayer player) {
-		UUID uid = UUID.fromString(player.bn());
-		boolean b = mimicNBTSave(uid);
-		if(b)
-			main.noteMods(ForceSavePlugin.color("&eSkyblock &3| &fSaved data for &a" + player.getName()));
-		return b;
-		
-	}
 	
 	public boolean mimicNBTSave(UUID uid) {
 		try {
