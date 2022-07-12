@@ -1,7 +1,10 @@
 package me.stella;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,12 +21,14 @@ public class ForceSavePlugin extends JavaPlugin {
 	private List<Player> moderators;
 	private NBTRepository repository;
 	private DataListeners listener;
+	public Map<UUID, Boolean> joinMap;
 	
 	@Override
 	public void onEnable() {
 		this.repository = new NBTRepository(this);
 		this.moderators = new ArrayList<Player>();
 		this.listener = new DataListeners(this);
+		joinMap = new HashMap<UUID, Boolean>();
 		this.listener.register();
 		logger.log(Level.INFO, color("&eSkyblock &3| &fLoading &aForceSave v0.1 &fby &bDucTrader"));
 	}
@@ -37,6 +42,12 @@ public class ForceSavePlugin extends JavaPlugin {
 	
 	public void addMod(Player p) {
 		this.moderators.add(p);
+	}
+	
+	public boolean isAllowedJoin(Player p) {
+		if(!joinMap.containsKey(p.getUniqueId()))
+			return true;
+		return joinMap.get(p.getUniqueId());
 	}
 	
 	public void noteMods(String message) {

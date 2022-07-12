@@ -2,8 +2,10 @@ package me.stella.internal;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,13 +21,14 @@ import net.minecraft.server.v1_12_R1.WorldNBTStorage;
 
 public class NBTRepository {
 	
+	private List<String> worlds = Arrays.asList(new String[] {"lobby-storm","SuperiorWorld","mine","other-world","world-build"});
 	private Map<UUID, NBTTagCompound> repo;
 	private ForceSavePlugin main;
 	private File base;
 	
 	public NBTRepository(ForceSavePlugin main) {
 		this.main = main;
-		this.base = ((WorldNBTStorage)(((CraftServer)main.getServer()).getHandle().playerFileData)).getDirectory();
+		this.base = ((WorldNBTStorage)(((CraftServer)main.getServer()).getHandle().playerFileData)).getDirectory().getParentFile();
 		this.repo = buildServerProfile(main);
 	}
 	
@@ -77,20 +80,27 @@ public class NBTRepository {
 	
 	
 	public boolean mimicNBTSave(UUID uid) {
-		try {
-			NBTTagCompound profile = this.repo.get(uid);
-			File tmp = new File(this.base, String.valueOf(uid.toString()) + ".dat.tmp");
-			File f1 = new File(this.base, String.valueOf(uid.toString()) + ".dat");
-			NBTCompressedStreamTools.a(profile, new FileOutputStream(tmp));
-			if(f1.exists())
-				f1.delete();
-			tmp.renameTo(f1); return true;
-		} catch(Exception e) {
-			this.main.logWarning(ForceSavePlugin.color(
-					"&eSkyblock &3| &cError: Unable to save profile with id " + uid.toString()));
-			e.printStackTrace();
-			return false;
-		}
+		return syncAllWorlds(uid);
+	}
+	
+	private boolean syncAllWorlds(UUID uid) {
+		NBTTagCompound profile = repo.get(uid);
+		worlds.stream().forEach(w -> {
+			File dir = new File(base, w + "/playerdata");
+			File tmp = new File(dir, String.valueOf(uid.toString()) + ".dat.tmp");
+			File f = new File(dir, String.valueOf(uid.toString()) + ".dat");
+			try {
+				NBTCompressedStreamTools.a(profile, new FileOutputStream(tmp));
+				if(f.exists())
+					f.delete();
+				tmp.renameTo(f);
+			} catch(Exception e) {
+				this.main.logWarning(ForceSavePlugin.color(
+						"&eSkyblock &3| &cError: Unable to save profile with id " + uid.toString()));
+				e.printStackTrace();
+			}
+		});
+		return true;
 	}
 
 }

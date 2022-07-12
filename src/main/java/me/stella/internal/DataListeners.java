@@ -11,6 +11,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import me.stella.ForceSavePlugin;
@@ -48,6 +50,12 @@ public class DataListeners {
 		}
 		
 		@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
+		public void onHandshake(PlayerLoginEvent e) {
+			if(!main.isAllowedJoin(e.getPlayer()))
+				e.disallow(Result.KICK_OTHER, ForceSavePlugin.color("&eSkyblock &3| &fNot allowed to join...Please wait..."));
+		}
+		
+		@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
 		public void onLogin(PlayerJoinEvent e) {
 			UUID id = e.getPlayer().getUniqueId();
 			NBTTagCompound t = ((CraftPlayer)e.getPlayer()).getHandle().save(new NBTTagCompound());
@@ -77,8 +85,9 @@ public class DataListeners {
 			UUID id = e.getPlayer().getUniqueId();
 			NBTTagCompound t = ((CraftPlayer)e.getPlayer()).getHandle().save(new NBTTagCompound());
 			new Thread(new Update(getMain(), id, t)).start();
-			new Thread(new Save(id, getMain())).start();
+			new Thread(new Save(id, getMain())).start(); 
 			main.removeMods(e.getPlayer());
+			main.joinMap.put(id, false);
 		}
 	}
  	
@@ -109,6 +118,7 @@ public class DataListeners {
 		public void run() {
 			NBTRepository rep = this.main.getRepository();
 			rep.mimicNBTSave(this.id);
+			main.joinMap.put(id, true);
 		}
 	}
 
